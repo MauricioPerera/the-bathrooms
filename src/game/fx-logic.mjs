@@ -67,7 +67,8 @@ export function attenuation(dist, refDist, maxDist) {
 }
 
 // --- scheduleAmbientEvents --------------------------------------------------
-const EVENT_TYPES = ['flush', 'dryer', 'stall_noise', 'pipe_knock'];
+const EVENT_TYPES = ['flush', 'dryer', 'stall_noise', 'pipe_knock',
+  'shower_hiss', 'door_slam', 'drain_gurgle', 'faucet_squeal'];
 const SLOT_MS = 10000; // reticula fija de 10s -> 60 eventos/10min, 180/30min
 
 export function scheduleAmbientEvents(seed, t0, t1) {
@@ -80,7 +81,7 @@ export function scheduleAmbientEvents(seed, t0, t1) {
     if (t < t0 || t >= t1) continue;
     events.push({
       t,
-      type: EVENT_TYPES[hashMix(seed, slot, 11) % 4],
+      type: EVENT_TYPES[hashMix(seed, slot, 11) % EVENT_TYPES.length],
       dx: (hashFloat(seed, slot, 12) * 2 - 1) * 20,
       dz: (hashFloat(seed, slot, 13) * 2 - 1) * 20,
     });
