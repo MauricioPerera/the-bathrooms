@@ -13,7 +13,7 @@ budget:
   max_cyclomatic_complexity: 1
   max_nesting_depth: 1
 tests: "tests/game/game-md.test.mjs"
-tests_sha256: "540690fbad0fb87ace4acb0feaa105c7ad82d539abfaabe81c8fffc4193ab62a"
+tests_sha256: "aad9fde22cd726c9e65f3c37acbd46d66c948f70a23882c29a75ccac7abff971"
 touch_only: ['src/game/GAME.md', 'src/game/game-data.generated.js']
 deps_allowed: []
 forbids: ['network', 'editar vendor/', 'editar los tests congelados']
@@ -43,8 +43,10 @@ mapas/listas de flujo en una linea; SIN `- item` de bloque):
 - `prefabs:` piezas voxel reutilizables (resolucion: 8 voxeles = 1 celda = 2m,
   1 voxel = 0.25m). `size: [w,h,d]` enteros; `fill` y/o `cells`.
 - `structures:` composiciones por referencia. REQUERIDAS (el motor las instancia por
-  nombre): `stall_unit` (cubiculo con puerta y taza), `sink_unit` (lavabo + espejo),
-  `urinal_unit`, `bin_full` (papelera desbordada de papel), `dispenser_empty`
+  nombre): `stall_unit` (cubiculo de uso independiente: mamparas completas, puerta
+  entreabierta con luz de piso, retrete visible adentro), `sink_unit` (lavabo + espejo),
+  `urinal_unit` (pieza mural reconocible a media altura), `toilet_unit` (retrete exento:
+  mochila + taza + asiento), `bin_full` (papelera desbordada de papel), `dispenser_empty`
   (dispensador vacio), `light_fixture` (tubo fluorescente de techo). Cada una con
   `count > 0` y extension < 24 voxeles por eje.
 
@@ -58,6 +60,14 @@ mapas/listas de flujo en una linea; SIN `- item` de bloque):
   enfermizo. Azulejos palidos amarillentos/verdosos con lechada oscurecida, moho,
   mugre, porcelana manchada, agua turbia, luz fluorescente amarillenta. NADA de colores
   alegres o saturados.
+- **Legibilidad (feedback v2 del usuario)**: las estructuras deben RECONOCERSE como
+  mobiliario de bano a 4-6 m bajo luz fluorescente tenue: proporciones inequivocas
+  (retrete = mochila alta + taza baja que sobresale; urinario = cuenco mural a media
+  altura; lavabo = pileta que sobresale de la pared con espejo encima; cubiculo =
+  mamparas hasta ~2.2 m con puerta y hueco inferior de ~2 voxeles) y CONTRASTE fuerte de
+  material (PORCELAIN clara contra pared oscura; puertas STALL distintas de la pared).
+  Todas las estructuras se disenan mirando a +z (rot 0): el motor las rota hacia el
+  espacio caminable.
 - El cuerpo Markdown documenta cada seccion del perfil (`Overview`, `Materials`,
   `Prefabs`, `Structures`, `Do's and Don'ts`) como doc canonica de diseno del juego.
 

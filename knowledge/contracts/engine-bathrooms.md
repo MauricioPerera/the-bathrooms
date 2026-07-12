@@ -76,6 +76,21 @@ Archivos (perimetro completo en `touch_only`):
   seed via maze-core/fx-logic. `Math.random` permitido UNICAMENTE para texturas de
   ruido audiovisual no persistente (grano VHS, buffer de ruido de audio).
 
+## Correcciones v2 (feedback del usuario, obligatorias y literales)
+1. "el zumbido de fondo llega a ser muy incomodo y matar la experiencia; ideal que fuera
+   mas sutil y que se incrementara al acercarse a las luces": el `hum` electrico debe ser
+   APENAS perceptible como base (casi inaudible lejos de luces) y crecer con la cercania
+   a la luz VIVA (steady/flicker, no dead) mas proxima usando `attenuation` sobre la
+   distancia jugador-luz; con luces flicker, la amplitud del hum acompana el parpadeo.
+   Revisar niveles generales: ningun loop continuo debe fatigar (goteo moderado).
+2. "no se logra distinguir que son los muebles": aplicar `rot` del prop como ROTACION
+   REAL de la estructura voxel (90 grados * rot alrededor de Y, alrededor del centro de
+   la celda), no solo traslacion — los muebles deben MIRAR hacia el espacio caminable y
+   quedar pegados a su pared. Instanciar tambien `toilet_unit` (nueva estructura del
+   GAME.md v2). Subir lo minimo necesario la legibilidad (radio/intensidad de las
+   PointLights o ambiente) para reconocer siluetas a 4-6 m de un fixture encendido,
+   sin perder la oscuridad opresiva de las zonas muertas.
+
 ## Examples
 - Abrir `src/game/index.html` servido localmente => overlay con titulo y hint de
   `GAME.platform.texts`; click => pointer lock, audio arranca, HUD VHS visible
