@@ -13,7 +13,7 @@ budget:
   max_cyclomatic_complexity: 12
   max_nesting_depth: 4
 tests: "tests/game/maze-core.test.mjs"
-tests_sha256: "34426b9ea370fd8bca806a8cfe8d637619d4ea0eb5d5be87ba538d61d2d6b04d"
+tests_sha256: "12c8f98f94ebb65126421329a57d6044788b8dada7c0daea83f8d37227c6dd40"
 touch_only: ['src/game/maze-core.mjs']
 deps_allowed: []
 forbids: ['network', 'Math.random', 'Date.now', 'DOM', 'three.js', 'editar los tests congelados']
@@ -89,6 +89,17 @@ export function resolveMovement(seed, pos, delta, radius, opts) // -> {x, z}
 - DON'T: estado mutable entre llamadas (sin caches que cambien resultados), sin I/O,
   sin DOM, sin dependencias, sin tocar nada fuera de `src/game/maze-core.mjs`.
 - DON'T: editar `tests/game/maze-core.test.mjs` — si un test parece mal, PARA y reportalo.
+
+## Ampliacion v3 (variedad de salas, obligatoria)
+- Tipos de celda ampliados a 0..6: `5` = sala de duchas (caminable), `6` = cuarto de
+  limpieza / vestuario (caminable). Ambos deben aparecer en la muestra de 25 chunks.
+- Props nuevos: de pared `shower` (ducha) y `dryer` (secador de manos mural, tipico
+  cerca de lavabos); sueltos `mop_bucket` (cubo de fregona con palo, en cuartos tipo 6)
+  y `bench` (banco de vestuario, en salas 5/6). Mismas reglas que los existentes
+  (pared = celda no caminable con vecino caminable; suelto = celda caminable).
+- Coherencia tematica: duchas en filas dentro de salas tipo 5; mop_bucket/bench en
+  salas tipo 6; dryer cerca de zonas de lavabos. Las salas nuevas conviven con las
+  existentes sin romper reticula, conectividad ni densidades ya contratadas.
 
 ## Tests
 Oraculo congelado en `tests/game/maze-core.test.mjs` (sellado por `tests_sha256`):

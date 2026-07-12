@@ -13,7 +13,7 @@ budget:
   max_cyclomatic_complexity: 1
   max_nesting_depth: 1
 tests: "tests/game/game-md.test.mjs"
-tests_sha256: "aad9fde22cd726c9e65f3c37acbd46d66c948f70a23882c29a75ccac7abff971"
+tests_sha256: "952c31ccfd9a27d743d4304491ad727a12778eb03f7b041ef334c5c772571789"
 touch_only: ['src/game/GAME.md', 'src/game/game-data.generated.js']
 deps_allowed: []
 forbids: ['network', 'editar vendor/', 'editar los tests congelados']
@@ -84,6 +84,14 @@ mapas/listas de flujo en una linea; SIN `- item` de bloque):
 - DON'T: tocar `vendor/` ni los tests congelados; no editar el artefacto generado a mano
   (se regenera con el export; el test lo valida).
 - DON'T: logica en los datos — el layout del laberinto y el render son de otros contratos.
+
+## Ampliacion v3 (estructuras de variedad de salas, obligatoria)
+- Estructuras nuevas requeridas: `shower_unit` (plato de ducha + regadera mural +
+  cortina a medio caer o barra), `dryer_unit` (secador de manos mural METAL a media
+  altura, boca abajo), `mop_bucket` (cubo con agua sucia y palo de fregona), `bench_unit`
+  (banco bajo de vestuario sobre patas). Mismas reglas de legibilidad y orientacion
+  (+z) que v2; materiales nuevos permitidos (p.ej. CURTAIN, RUST) manteniendo la
+  direccion de arte enfermiza.
 
 ## Tests
 Oraculo congelado en `tests/game/game-md.test.mjs` (sellado por `tests_sha256`).

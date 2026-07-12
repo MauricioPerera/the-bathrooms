@@ -57,11 +57,19 @@ test('audio.mjs: sintesis WebAudio procedural, sin assets', () => {
   const src = read('src/game/audio.mjs');
   assert.ok(/AudioContext/.test(src), 'audio.mjs debe usar Web Audio API');
   assert.ok(!/\.(mp3|ogg|wav|m4a)/i.test(src), 'audio.mjs no debe referenciar archivos de audio');
-  for (const ev of ['flush', 'dryer', 'stall_noise', 'pipe_knock']) {
+  for (const ev of ['flush', 'dryer', 'stall_noise', 'pipe_knock',
+    'shower_hiss', 'door_slam', 'drain_gurgle', 'faucet_squeal']) {
     assert.ok(src.includes(ev), 'audio.mjs no maneja el evento: ' + ev);
   }
   for (const amb of ['drip', 'hum']) {
     assert.ok(src.toLowerCase().includes(amb), 'audio.mjs no implementa capa ambiental: ' + amb);
+  }
+});
+
+test('engine.mjs: instancia las estructuras nuevas de variedad de salas', () => {
+  const src = read('src/game/engine.mjs');
+  for (const st of ['shower_unit', 'dryer_unit', 'mop_bucket', 'bench_unit']) {
+    assert.ok(src.includes(st), 'engine.mjs no instancia la estructura: ' + st);
   }
 });
 

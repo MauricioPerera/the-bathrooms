@@ -8,8 +8,9 @@ const { generateChunk, isWalkable, chunksInRadius, resolveMovement } = mod;
 
 const SEED = 20260711;
 const CS = 18; // chunkSize fijado por contrato (multiplo del periodo de bloque 6)
-const PROP_TYPES = new Set(['stall', 'sink', 'mirror', 'urinal', 'dispenser', 'bin', 'pipes']);
-const WALL_PROPS = new Set(['stall', 'sink', 'mirror', 'urinal', 'dispenser']);
+const PROP_TYPES = new Set(['stall', 'sink', 'mirror', 'urinal', 'dispenser', 'bin', 'pipes',
+  'shower', 'dryer', 'mop_bucket', 'bench']);
+const WALL_PROPS = new Set(['stall', 'sink', 'mirror', 'urinal', 'dispenser', 'shower', 'dryer']);
 
 test('exports esperados', () => {
   for (const fn of [generateChunk, isWalkable, chunksInRadius, resolveMovement])
@@ -34,7 +35,7 @@ test('forma del chunk: size, cells, tipos de celda validos', () => {
   assert.equal(c.size, CS);
   assert.equal(c.cells.length, CS * CS);
   for (const v of c.cells) {
-    assert.ok(Number.isInteger(v) && v >= 0 && v <= 4, 'tipo de celda 0..4, vino: ' + v);
+    assert.ok(Number.isInteger(v) && v >= 0 && v <= 6, 'tipo de celda 0..6, vino: ' + v);
   }
 });
 
@@ -129,7 +130,10 @@ test('densidad: fraccion caminable razonable y hay stalls, sinks y celdas inunda
   const frac = walk / total;
   assert.ok(frac > 0.25 && frac < 0.85, 'fraccion caminable fuera de rango: ' + frac);
   assert.ok(types.has(4), 'sin celdas inundadas (tipo 4) en 25 chunks');
-  for (const t of ['stall', 'sink', 'bin']) assert.ok(propTypes.has(t), 'falta prop: ' + t);
+  assert.ok(types.has(5), 'sin salas de duchas (tipo 5) en 25 chunks');
+  assert.ok(types.has(6), 'sin cuartos de limpieza/vestuario (tipo 6) en 25 chunks');
+  for (const t of ['stall', 'sink', 'bin', 'shower', 'dryer', 'mop_bucket', 'bench'])
+    assert.ok(propTypes.has(t), 'falta prop: ' + t);
 });
 
 test('lights y puddles: en celdas caminables, al menos 1 luz por chunk, radio de charco en rango', () => {

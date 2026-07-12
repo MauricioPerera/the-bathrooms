@@ -7,7 +7,8 @@ const mod = await import(new URL('../../src/game/fx-logic.mjs', import.meta.url)
 const { vhsTimestamp, lightState, attenuation, scheduleAmbientEvents } = mod;
 
 const SEED = 20260711;
-const EVENT_TYPES = new Set(['flush', 'dryer', 'stall_noise', 'pipe_knock']);
+const EVENT_TYPES = new Set(['flush', 'dryer', 'stall_noise', 'pipe_knock',
+  'shower_hiss', 'door_slam', 'drain_gurgle', 'faucet_squeal']);
 
 test('exports esperados', () => {
   for (const fn of [vhsTimestamp, lightState, attenuation, scheduleAmbientEvents])
@@ -113,5 +114,5 @@ test('scheduleAmbientEvents: ventanas componen (sin estado entre llamadas)', () 
 test('scheduleAmbientEvents: hay variedad de tipos en una ventana larga', () => {
   const evs = scheduleAmbientEvents(SEED, 0, 1800000); // 30 min
   const types = new Set(evs.map(e => e.type));
-  assert.ok(types.size >= 3, 'menos de 3 tipos de evento distintos en 30min: ' + [...types].join(','));
+  assert.ok(types.size >= 6, 'menos de 6 tipos de evento distintos en 30min: ' + [...types].join(','));
 });

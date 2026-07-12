@@ -15,7 +15,8 @@ const GAME = win.GAME;
 const REQUIRED_MATERIALS = ['TILE_WALL', 'TILE_FLOOR', 'GROUT', 'STALL', 'PORCELAIN',
   'MIRROR', 'WATER', 'MOLD', 'GRIME', 'CEILING', 'LIGHT_ON', 'LIGHT_DEAD', 'PAPER'];
 const REQUIRED_STRUCTURES = ['stall_unit', 'sink_unit', 'urinal_unit', 'toilet_unit',
-  'bin_full', 'dispenser_empty', 'light_fixture'];
+  'bin_full', 'dispenser_empty', 'light_fixture',
+  'shower_unit', 'dryer_unit', 'mop_bucket', 'bench_unit'];
 
 test('artefacto generado: perfil voxel y titulo del juego', () => {
   assert.ok(GAME, 'window.GAME no definido por el artefacto');

@@ -13,7 +13,7 @@ budget:
   max_cyclomatic_complexity: 10
   max_nesting_depth: 4
 tests: "tests/game/fx-logic.test.mjs"
-tests_sha256: "44357ecb1a65a1a08d9f4f63e75bc559f80ce12bdd38dc3cb3a35b1271e998b4"
+tests_sha256: "4f16d9bd83bffb4a435c7cc16ee0d8ea919eff118715598452e7d048efedea82"
 touch_only: ['src/game/fx-logic.mjs']
 deps_allowed: []
 forbids: ['network', 'Math.random', 'Date.now', 'DOM', 'editar los tests congelados']
@@ -75,6 +75,12 @@ export function scheduleAmbientEvents(seed, t0, t1)   // -> [{t, type, dx, dz}]
 - DON'T: acumular estado entre llamadas; el motor puede consultar cualquier t en
   cualquier orden.
 - DON'T: editar `tests/game/fx-logic.test.mjs` — si un test parece mal, PARA y reportalo.
+
+## Ampliacion v3 (eventos sonoros nuevos, obligatoria)
+- `scheduleAmbientEvents` amplia los tipos a 8: los 4 existentes mas `shower_hiss`
+  (ducha que se abre sola), `door_slam` (portazo de cubiculo), `drain_gurgle`
+  (gorgoteo de desague) y `faucet_squeal` (chirrido de grifo). En 30 minutos deben
+  aparecer >= 6 tipos distintos. Composicion por slots y rangos existentes sin cambios.
 
 ## Tests
 Oraculo congelado en `tests/game/fx-logic.test.mjs` (sellado por `tests_sha256`):

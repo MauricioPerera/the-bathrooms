@@ -13,7 +13,7 @@ budget:
   max_cyclomatic_complexity: 14
   max_nesting_depth: 4
 tests: "tests/game/engine.test.mjs"
-tests_sha256: "d9e9d9f7db235fce64980307453d3fb5678b4f21114881873c155c300defec6f"
+tests_sha256: "12a70194b131d88524851c479c3f96682d6ebed8a3cd251e2acb1e6afcbf80fe"
 touch_only: ['src/game/engine.mjs', 'src/game/vhs.mjs', 'src/game/audio.mjs', 'src/game/main.mjs', 'src/game/index.html']
 deps_allowed: ['three (SOLO via importmap al vendoreado ../../vendor/three/three.module.js)']
 forbids: ['network', 'CDNs', 'assets binarios', 'editar vendor/', 'editar src/game/maze-core.mjs', 'editar src/game/fx-logic.mjs', 'editar src/game/GAME.md', 'editar los tests congelados']
@@ -109,6 +109,17 @@ Archivos (perimetro completo en `touch_only`):
   se hace con render-to-target + quad con ShaderMaterial propio, o shader inyectado.
 - DON'T: editar maze-core.mjs, fx-logic.mjs, GAME.md, vendor/ ni los tests congelados.
   Si un test parece mal, PARA y reportalo.
+
+## Ampliacion v3 (variedad de salas y sonidos, obligatoria)
+- Instanciar las estructuras nuevas del artefacto por prop type: `shower` -> shower_unit,
+  `dryer` -> dryer_unit, `mop_bucket` -> mop_bucket, `bench` -> bench_unit (con la misma
+  rotacion real v2 y degradacion con gracia si el artefacto aun no las trae).
+- Celdas tipo 5 (duchas) y 6 (limpieza/vestuario): caminables, piso/techo normales
+  (tinte sutil distinto permitido); tipo 5 puede llevar charcos extra.
+- `audio.mjs`: sintetizar los 4 eventos nuevos de fx-logic v3 — `shower_hiss` (ruido
+  filtrado continuo 6-10s con apertura), `door_slam` (impacto seco con resonancia),
+  `drain_gurgle` (burbujeo grave irregular), `faucet_squeal` (chirrido agudo corto,
+  incomodo pero breve). Espacializados igual que los existentes.
 
 ## Tests
 Oraculo congelado en `tests/game/engine.test.mjs` (sellado por `tests_sha256`):
