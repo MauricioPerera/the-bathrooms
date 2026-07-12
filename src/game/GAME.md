@@ -14,53 +14,65 @@ platform:
   audio: { refDist: 4, maxDist: 28 }
   texts: { title: "The Bathrooms", rec: "REC", hint: "WASD para caminar, mouse para mirar, Shift para correr" }
 materials:
-  TILE_WALL: { color: [196, 202, 176] }
-  TILE_FLOOR: { color: [174, 172, 148] }
-  GROUT: { color: [86, 84, 70] }
-  STALL: { color: [150, 158, 138] }
-  PORCELAIN: { color: [212, 208, 192] }
-  MIRROR: { color: [126, 148, 146] }
-  WATER: { color: [98, 118, 108] }
-  MOLD: { color: [58, 72, 50] }
-  GRIME: { color: [94, 84, 68] }
-  CEILING: { color: [198, 194, 172] }
-  LIGHT_ON: { color: [228, 224, 176] }
-  LIGHT_DEAD: { color: [118, 120, 116] }
-  PAPER: { color: [204, 200, 186] }
-  PIPE: { color: [108, 110, 106] }
-  METAL: { color: [126, 128, 126] }
-  TRASH: { color: [78, 74, 62] }
+  TILE_WALL: { color: [150, 156, 130] }
+  TILE_FLOOR: { color: [120, 122, 102] }
+  GROUT: { color: [66, 64, 52] }
+  STALL: { color: [104, 122, 98] }
+  PORCELAIN: { color: [226, 224, 212] }
+  MIRROR: { color: [98, 122, 120] }
+  WATER: { color: [88, 108, 98] }
+  MOLD: { color: [52, 66, 44] }
+  GRIME: { color: [92, 80, 64] }
+  CEILING: { color: [176, 172, 150] }
+  LIGHT_ON: { color: [232, 228, 180] }
+  LIGHT_DEAD: { color: [110, 112, 108] }
+  PAPER: { color: [214, 210, 196] }
+  PIPE: { color: [104, 106, 102] }
+  METAL: { color: [126, 128, 124] }
+  TRASH: { color: [72, 68, 56] }
 prefabs:
   wall_slab: { size: [8, 9, 1], fill: TILE_WALL }
   floor_slab: { size: [8, 1, 8], fill: TILE_FLOOR }
   ceiling_slab: { size: [8, 1, 8], fill: CEILING }
+  toilet_tank: { size: [4, 5, 2], fill: PORCELAIN }
+  toilet_bowl: { size: [4, 3, 3], fill: PORCELAIN }
+  toilet_seat: { size: [4, 1, 4], fill: PORCELAIN }
+  toilet_foot: { size: [2, 1, 2], fill: PORCELAIN }
   stall_side: { size: [1, 9, 8], fill: STALL }
   stall_back: { size: [8, 9, 1], fill: STALL }
-  stall_door: { size: [6, 8, 1], fill: STALL }
-  toilet_base: { size: [4, 3, 4], fill: PORCELAIN }
-  toilet_seat: { size: [4, 1, 4], fill: PORCELAIN }
-  sink_basin: { size: [5, 2, 4], fill: PORCELAIN }
-  mirror_panel: { size: [5, 5, 1], fill: MIRROR, cells: [{ x: 0, y: 0, z: 0, m: MOLD }, { x: 4, y: 0, z: 0, m: MOLD }, { x: 0, y: 4, z: 0, m: MOLD }, { x: 4, y: 4, z: 0, m: MOLD }] }
+  stall_door: { size: [4, 7, 1], fill: STALL }
+  sink_basin: { size: [6, 2, 4], fill: PORCELAIN }
+  faucet_stem: { size: [1, 2, 1], fill: METAL }
+  faucet_spout: { size: [1, 1, 2], fill: METAL }
+  mirror_panel: { size: [6, 5, 1], fill: MIRROR, cells: [{ x: 0, y: 0, z: 0, m: MOLD }, { x: 5, y: 0, z: 0, m: MOLD }, { x: 0, y: 4, z: 0, m: MOLD }, { x: 5, y: 4, z: 0, m: MOLD }] }
+  urinal_back: { size: [4, 6, 1], fill: PORCELAIN }
+  urinal_basin: { size: [4, 3, 2], fill: PORCELAIN }
+  urinal_lip: { size: [4, 1, 1], fill: PORCELAIN }
   pipe_segment: { size: [1, 4, 1], fill: PIPE }
+  pipe_short: { size: [1, 3, 1], fill: PIPE }
   grime_patch: { size: [2, 1, 1], fill: GRIME }
+  grime_streak: { size: [1, 3, 1], fill: GRIME }
   water_puddle: { size: [4, 1, 4], fill: WATER }
-  urinal_bowl: { size: [3, 5, 2], fill: PORCELAIN }
-  bin_body: { size: [3, 4, 3], fill: METAL }
+  water_pool: { size: [3, 1, 3], fill: WATER }
+  bin_body: { size: [4, 5, 4], fill: METAL }
+  paper_heap: { size: [3, 2, 3], fill: PAPER }
   paper_wad: { size: [1, 1, 1], fill: PAPER }
-  dispenser_box: { size: [2, 3, 1], fill: METAL }
+  dispenser_box: { size: [3, 4, 1], fill: METAL }
   light_tube: { size: [6, 1, 1], fill: LIGHT_ON }
   light_tube_dead: { size: [6, 1, 1], fill: LIGHT_DEAD }
 structures:
+  toilet_unit:
+    place: [{ prefab: toilet_foot, at: [1, 0, 3] }, { prefab: toilet_tank, at: [0, 3, 0] }, { prefab: toilet_bowl, at: [0, 1, 2] }, { prefab: toilet_seat, at: [0, 4, 2] }, { prefab: water_pool, at: [0, 0, 2] }, { prefab: grime_patch, at: [1, 2, 4] }, { prefab: grime_streak, at: [3, 3, 1] }]
   stall_unit:
-    place: [{ prefab: floor_slab, at: [0, 0, 0] }, { prefab: stall_side, at: [0, 1, 0] }, { prefab: stall_side, at: [7, 1, 0] }, { prefab: stall_back, at: [0, 1, 7] }, { prefab: stall_door, at: [1, 1, 1] }, { prefab: toilet_base, at: [2, 1, 3] }, { prefab: toilet_seat, at: [2, 4, 3] }, { prefab: water_puddle, at: [2, 1, 1] }]
+    place: [{ prefab: floor_slab, at: [0, 0, 0] }, { prefab: stall_side, at: [0, 1, 0] }, { prefab: stall_side, at: [7, 1, 0] }, { prefab: stall_back, at: [0, 1, 0] }, { prefab: stall_door, at: [1, 3, 7] }, { prefab: toilet_tank, at: [2, 1, 1] }, { prefab: toilet_bowl, at: [2, 1, 3] }, { prefab: toilet_seat, at: [2, 4, 3] }, { prefab: water_pool, at: [1, 0, 4] }]
   sink_unit:
-    place: [{ prefab: sink_basin, at: [0, 3, 0] }, { prefab: mirror_panel, at: [0, 6, 0] }, { prefab: pipe_segment, at: [1, 0, 1] }, { prefab: pipe_segment, at: [3, 0, 1] }, { prefab: grime_patch, at: [1, 3, 0] }]
+    place: [{ prefab: mirror_panel, at: [1, 8, 0] }, { prefab: sink_basin, at: [1, 4, 1] }, { prefab: faucet_stem, at: [3, 6, 1] }, { prefab: faucet_spout, at: [3, 6, 2] }, { prefab: water_pool, at: [2, 5, 1] }, { prefab: pipe_segment, at: [3, 0, 2] }, { prefab: grime_streak, at: [1, 1, 4] }]
   urinal_unit:
-    place: [{ prefab: wall_slab, at: [0, 0, 2] }, { prefab: urinal_bowl, at: [1, 2, 0] }, { prefab: pipe_segment, at: [2, 0, 0] }, { prefab: pipe_segment, at: [2, 6, 0] }, { prefab: grime_patch, at: [1, 1, 0] }]
+    place: [{ prefab: wall_slab, at: [0, 0, 0] }, { prefab: urinal_back, at: [2, 3, 1] }, { prefab: urinal_basin, at: [2, 3, 2] }, { prefab: urinal_lip, at: [2, 3, 3] }, { prefab: water_pool, at: [2, 4, 2] }, { prefab: pipe_short, at: [3, 0, 1] }, { prefab: grime_streak, at: [3, 1, 1] }]
   bin_full:
-    place: [{ prefab: bin_body, at: [1, 0, 1] }, { prefab: paper_wad, at: [1, 4, 1] }, { prefab: paper_wad, at: [2, 4, 2] }, { prefab: paper_wad, at: [3, 4, 3] }, { prefab: paper_wad, at: [0, 1, 2] }, { prefab: paper_wad, at: [5, 2, 2] }, { prefab: paper_wad, at: [2, 0, 5] }, { prefab: paper_wad, at: [3, 3, 0] }]
+    place: [{ prefab: bin_body, at: [2, 0, 2] }, { prefab: paper_heap, at: [2, 5, 2] }, { prefab: paper_wad, at: [1, 0, 2] }, { prefab: paper_wad, at: [5, 0, 3] }, { prefab: paper_wad, at: [2, 0, 6] }, { prefab: paper_wad, at: [4, 1, 1] }, { prefab: paper_wad, at: [1, 0, 5] }, { prefab: paper_wad, at: [6, 1, 5] }]
   dispenser_empty:
-    place: [{ prefab: dispenser_box, at: [0, 2, 0] }, { prefab: grime_patch, at: [0, 1, 0] }]
+    place: [{ prefab: dispenser_box, at: [2, 5, 0] }, { prefab: paper_wad, at: [3, 4, 0] }, { prefab: grime_streak, at: [3, 2, 0] }]
   light_fixture:
     place: [{ prefab: ceiling_slab, at: [0, 1, 0] }, { prefab: light_tube, at: [1, 0, 2] }, { prefab: light_tube_dead, at: [1, 0, 4] }]
 ---
@@ -84,6 +96,11 @@ Escala voxel: **8 voxeles = 1 celda = 2 m**, es decir **1 voxel = 0,25 m**. Las
 estructuras se mantienen por debajo de 24 voxeles por eje (unas 3 celdas), lo
 justo para una pieza de mobiliario.
 
+**Orientación (convención v2):** TODAS las estructuras se diseñan mirando a **+z**
+(su frente hacia +z, rotación 0): la pared va en `z = 0` y la pieza sobresale o se
+abre hacia `+z`. El motor rota cada estructura para que ese frente mire al espacio
+caminable. Así una sola definición sirve para las cuatro paredes.
+
 Knobs de `platform`: mundo en chunks de 18 celdas, paso de jugador contenido
 (3,4 m/s) y vista corta (2 chunks) para reforzar el encierro; audio con caída de
 4 a 28 m para que el goteo y el zumbido se pierdan a la vuelta de cada esquina.
@@ -91,16 +108,22 @@ Knobs de `platform`: mundo en chunks de 18 celdas, paso de jugador contenido
 ## Materials
 
 Paleta deliberadamente **enferma y desaturada**. Nada alegre, nada saturado: es la
-luz fluorescente amarillenta rebotando sobre superficies sucias.
+luz fluorescente amarillenta rebotando sobre superficies sucias. En v2 los
+azulejos y el piso se **oscurecieron** y la `PORCELAIN` se **aclaró** a propósito:
+así el mobiliario (retretes, urinarios, lavabos) resalta como manchas claras
+contra paredes oscuras y se **reconoce a 4-6 m** bajo la luz muerta.
 
-- `TILE_WALL` / `TILE_FLOOR`: azulejo pálido amarillento-verdoso, ya cansado.
-- `GROUT`: la lechada entre azulejos, oscurecida por años de mugre.
-- `STALL`: la chapa/partición de los cubículos, verde institucional apagado.
-- `PORCELAIN`: blanco roto y manchado de tazas, lavabos y urinarios.
+- `TILE_WALL` / `TILE_FLOOR`: azulejo apagado amarillento-verdoso, oscurecido para
+  que la porcelana clara contraste.
+- `GROUT`: la lechada entre azulejos, casi negra de mugre.
+- `STALL`: la chapa/partición de los cubículos, verde institucional apagado, un
+  valor claramente distinto de la pared (para que la puerta se lea como puerta).
+- `PORCELAIN`: blanco roto, el material MÁS claro de la paleta; tazas, lavabos y
+  urinarios se recortan contra el fondo.
 - `MIRROR`: cristal turbio verdoso; refleja mal a propósito.
 - `WATER`: agua estancada, turbia, ni azul ni limpia.
 - `MOLD`: moho verde-negro que trepa por esquinas y juntas.
-- `GRIME`: churretes marrón-grises que bajan de grifos y dispensadores.
+- `GRIME`: churretes marrón-grises que bajan de grifos, tazas y dispensadores.
 - `CEILING`: plafón amarilleado por la nicotina de la luz.
 - `LIGHT_ON` / `LIGHT_DEAD`: tubo encendido (amarillo enfermo) y tubo muerto (gris).
 - `PAPER`: papel higiénico/toallas apelmazadas, blanco sucio.
@@ -113,37 +136,59 @@ Piezas voxel reutilizables, cada una con `size: [w, h, d]` entero y relleno `fil
 redibujar geometría:
 
 - Superficies: `wall_slab`, `floor_slab`, `ceiling_slab`.
-- Cubículo: `stall_side`, `stall_back`, `stall_door`, `toilet_base`, `toilet_seat`.
-- Lavabo: `sink_basin`, `mirror_panel` (con esquinas `MOLD` vía `cells`), `pipe_segment`.
-- Suciedad y agua: `grime_patch`, `water_puddle`.
-- Otros: `urinal_bowl`, `bin_body`, `paper_wad`, `dispenser_box`,
-  `light_tube`, `light_tube_dead`.
+- Retrete (compartido por `toilet_unit` y `stall_unit`): `toilet_tank` (mochila
+  alta atrás), `toilet_bowl` (taza baja que sobresale al frente), `toilet_seat`
+  (asiento que vuela sobre la taza) y `toilet_foot` (pie al piso).
+- Cubículo: `stall_side`, `stall_back`, `stall_door` (hoja parcial, entreabierta).
+- Lavabo: `sink_basin` (pileta que sobresale), `faucet_stem` + `faucet_spout`
+  (grifo `METAL`), `mirror_panel` (espejo grande con esquinas `MOLD` vía `cells`).
+- Urinario: `urinal_back` (cuerpo vertical mural), `urinal_basin` (cuenco que
+  sobresale), `urinal_lip` (borde que asoma).
+- Suciedad y agua: `grime_patch`, `grime_streak` (churrete vertical), `water_puddle`,
+  `water_pool`.
+- Cesto y dispensador: `bin_body`, `paper_heap`, `paper_wad`, `dispenser_box`.
+- Luz: `light_tube`, `light_tube_dead`.
 
 ## Structures
 
 Composiciones por referencia (`place`: prefab + offset `at`). El motor instancia
-cada una por su nombre exacto:
+cada una por su nombre exacto. Todas miran a **+z** (pared en `z = 0`):
 
-- `stall_unit`: cubículo cerrado — dos paredes `stall_side`, `stall_back`, una
-  `stall_door` entreabierta e insertada, taza `PORCELAIN` (`toilet_base` +
-  `toilet_seat`) y un charco `water_puddle` turbio en el piso.
-- `sink_unit`: lavabo `PORCELAIN` montado, `mirror_panel` con moho en las
-  esquinas, cañerías `pipe_segment` debajo y un churrete `grime_patch`.
-- `urinal_unit`: urinario `PORCELAIN` contra un `wall_slab`, cañería de entrada y
-  de descarga, mugre bajando por la pared.
-- `bin_full`: papelera `bin_body` desbordada, con `paper_wad` amontonados encima y
-  derramados alrededor por el piso.
-- `dispenser_empty`: dispensador `dispenser_box` vacío, con un churrete de
-  `grime_patch` seco debajo.
-- `light_fixture`: plafón `ceiling_slab` con un tubo `light_tube` encendido y otro
+- `toilet_unit` (**nueva, exento**): silueta inequívoca de retrete — `toilet_tank`
+  alto contra el fondo, `toilet_bowl` bajo que sobresale hacia el frente, `toilet_seat`
+  volando encima y `toilet_foot` al piso; `PORCELAIN` clara con un `water_pool` turbio
+  y manchas `GRIME`. Es la pieza que faltaba y por la que el usuario "no distinguía
+  qué eran las cosas".
+- `stall_unit`: cubículo legible — mamparas `stall_side` y fondo `stall_back` completos
+  hasta ~2,2 m (9 voxeles), `stall_door` **parcial y entreabierta** en el frente
+  dejando un **hueco inferior de 2 voxeles** (se ve piso/luz por debajo) y una rendija
+  lateral; dentro, el retrete (`toilet_tank` + `toilet_bowl` + `toilet_seat`) **asoma**
+  por la rendija y por el hueco, con `water_pool` en el piso.
+- `sink_unit`: `sink_basin` `PORCELAIN` que **sobresale claramente** de la pared a
+  altura de cintura, grifo `METAL` (`faucet_stem` + `faucet_spout`) encima, `mirror_panel`
+  grande arriba con esquinas de `MOLD`, `water_pool` turbia en la pileta, `pipe_segment`
+  de desagüe abajo y un churrete `grime_streak`.
+- `urinal_unit`: cuenco mural a media altura — `urinal_back` vertical montado en la
+  pared (`wall_slab` oscuro detrás para contraste), `urinal_basin` que sobresale con su
+  `urinal_lip`, agua turbia, `pipe_short` de desagüe abajo y mugre bajando.
+- `bin_full`: `bin_body` alto desbordado, `paper_heap` amontonado encima y `paper_wad`
+  derramados por el piso alrededor.
+- `dispenser_empty`: `dispenser_box` mural a la altura de la mano, con la última hoja
+  `paper_wad` colgando y un churrete `grime_streak` seco debajo.
+- `light_fixture`: plafón `ceiling_slab` con un `light_tube` encendido y otro
   `light_tube_dead` al lado — la mitad de la luz siempre está muerta.
 
 ## Do's and Don'ts
 
 - **DO** reusar prefabs dentro de `structures` por referencia: esa es la gracia del
-  perfil voxel (una taza, un tubo, un charco definidos una vez y colocados muchas).
-- **DO** mantener la dirección de arte liminal: superficies sucias, luz enferma,
-  cero color alegre o saturado. Si un material se ve "limpio", está mal.
+  perfil voxel (el retrete se define una vez y se coloca en `toilet_unit` y en
+  `stall_unit`).
+- **DO** diseñar mirando a `+z` (pared en `z = 0`, la pieza sobresale/abre hacia `+z`):
+  el motor rota cada estructura hacia el espacio caminable.
+- **DO** mantener contraste de material: `PORCELAIN` clara contra pared/piso oscuros,
+  `STALL` distinta de la pared. Si el mobiliario "se pierde" contra el fondo, está mal.
+- **DO** mantener la dirección de arte liminal: superficies sucias, luz enferma, cero
+  color alegre o saturado. Si un material se ve "limpio", está mal.
 - **DO** respetar el subset YAML del protocolo: listas de flujo en una línea y comas
   dentro de texto siempre entre comillas (ver `texts.hint`).
 - **DON'T** meter lógica en los datos: el laberinto infinito, la cámara, el filtro
