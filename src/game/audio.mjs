@@ -183,7 +183,112 @@ function pipe_knock(A, when, gain, pan) {
   }
 }
 
-const EVENT_SYNTH = { flush, dryer, stall_noise, pipe_knock };
+// --- eventos v3 (variedad sonora) -------------------------------------------
+
+// shower_hiss: agua a presion — ruido agudo filtrado continuo (6-10s) con apertura gradual
+function shower_hiss(A, when, gain, pan) {
+  const out = spatial(A, gain, pan);
+  const dur = 6 + Math.random() * 4; // 6..10s
+  const src = noiseSource(A.ctx, dur + 0.5);
+  const hp = A.ctx.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 1500;
+  const bp = A.ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.Q.value = 0.7;
+  bp.frequency.value = 3200; // silbido agudo del chorro
+  const eg = A.ctx.createGain();
+  eg.gain.setValueAtTime(0.0001, when);
+  eg.gain.linearRampToValueAtTime(0.6, when + 1.5); // apertura gradual (grifo abriendo)
+  eg.gain.setValueAtTime(0.6, when + dur - 0.9);
+  eg.gain.exponentialRampToValueAtTime(0.0001, when + dur); // cierre
+  src.connect(hp);
+  hp.connect(bp);
+  bp.connect(eg);
+  eg.connect(out);
+  src.start(when);
+  src.stop(when + dur + 0.4);
+}
+
+// door_slam: impacto seco corto (portazo) con resonancia grave del marco
+function door_slam(A, when, gain, pan) {
+  const out = spatial(A, gain, pan);
+  const src = noiseSource(A.ctx, 0.25); // golpe de banda ancha, muy corto
+  const lp = A.ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 900;
+  const eg = A.ctx.createGain();
+  eg.gain.setValueAtTime(0.0001, when);
+  eg.gain.exponentialRampToValueAtTime(1.0, when + 0.004);
+  eg.gain.exponentialRampToValueAtTime(0.0001, when + 0.16);
+  src.connect(lp);
+  lp.connect(eg);
+  eg.connect(out);
+  src.start(when);
+  src.stop(when + 0.26);
+  const o = A.ctx.createOscillator(); // resonancia grave (thump del marco)
+  o.type = 'sine';
+  o.frequency.setValueAtTime(110, when);
+  o.frequency.exponentialRampToValueAtTime(48, when + 0.32);
+  const og = A.ctx.createGain();
+  og.gain.setValueAtTime(0.0001, when);
+  og.gain.exponentialRampToValueAtTime(0.9, when + 0.01);
+  og.gain.exponentialRampToValueAtTime(0.0001, when + 0.45);
+  o.connect(og);
+  og.connect(out);
+  o.start(when);
+  o.stop(when + 0.5);
+}
+
+// drain_gurgle: burbujeo grave irregular (~3-5s) — blips graves con caida y timing aleatorio
+function drain_gurgle(A, when, gain, pan) {
+  const out = spatial(A, gain, pan);
+  const end = when + 3 + Math.random() * 2; // 3..5s
+  let t = when;
+  while (t < end) {
+    const o = A.ctx.createOscillator();
+    o.type = 'sine';
+    const f0 = 70 + Math.random() * 90;
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(f0 * 0.55, t + 0.14);
+    const eg = A.ctx.createGain();
+    eg.gain.setValueAtTime(0.0001, t);
+    eg.gain.exponentialRampToValueAtTime(0.55, t + 0.02);
+    eg.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+    o.connect(eg);
+    eg.connect(out);
+    o.start(t);
+    o.stop(t + 0.2);
+    t += 0.08 + Math.random() * 0.24; // burbujas espaciadas de forma irregular
+  }
+}
+
+// faucet_squeal: chirrido agudo corto de valvula (incomodo pero breve, no fatigante)
+function faucet_squeal(A, when, gain, pan) {
+  const out = spatial(A, gain, pan);
+  const dur = 0.35 + Math.random() * 0.25; // 0.35..0.6s, deliberadamente breve
+  const o = A.ctx.createOscillator();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(1800, when);
+  o.frequency.linearRampToValueAtTime(2600 + Math.random() * 400, when + dur); // chirrido ascendente
+  const bp = A.ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.Q.value = 8; // formante estrecho -> timbre metalico de valvula
+  bp.frequency.value = 2400;
+  const eg = A.ctx.createGain();
+  eg.gain.setValueAtTime(0.0001, when);
+  eg.gain.exponentialRampToValueAtTime(0.45, when + 0.03);
+  eg.gain.setValueAtTime(0.45, when + dur - 0.06);
+  eg.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+  o.connect(bp);
+  bp.connect(eg);
+  eg.connect(out);
+  o.start(when);
+  o.stop(when + dur + 0.05);
+}
+
+const EVENT_SYNTH = { flush, dryer, stall_noise, pipe_knock,
+  shower_hiss, door_slam, drain_gurgle, faucet_squeal };
 
 // consumir la ventana deslizante de scheduleAmbientEvents y agendar cada evento a su hora
 function pump(A, tMs) {

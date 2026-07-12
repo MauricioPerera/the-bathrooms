@@ -17,12 +17,19 @@ const VOX = 0.25; // 1 voxel = 0.25m (celda = 2m)
 const HUM_REF = 1.0; // m: dentro de este radio el hum toma toda la intensidad de la luz
 const HUM_MAX = 6.0; // m: a esta distancia la contribucion de esa luz al hum se anula
 
-// tipo de prop de maze-core -> estructura de GAME.VOXELS (null = sin malla)
+// tipo de prop de maze-core -> estructura de GAME.VOXELS (null = sin malla).
+// v3: shower/dryer/mop_bucket/bench de la variedad de salas nueva. Si el artefacto aun no
+// trajera alguna, buildStruct devuelve null y el prop se omite (degradacion con gracia).
 const PROP_STRUCT = {
   stall: 'stall_unit', sink: 'sink_unit', mirror: 'sink_unit',
   urinal: 'urinal_unit', dispenser: 'dispenser_empty', bin: 'bin_full', pipes: null,
+  shower: 'shower_unit', dryer: 'dryer_unit', mop_bucket: 'mop_bucket', bench: 'bench_unit',
 };
 const TOILET = 'toilet_unit'; // estructura v2 (si el artefacto aun no la trae, degrada a stall_unit)
+
+// v3: tinte sutil del piso por tipo de sala (multiplica el mapa de azulejo; blanco = neutro).
+// 5=duchas (frio/verdoso humedo), 6=limpieza/vestuario (calido apagado).
+const FLOOR_TINT = { 5: [0.80, 0.90, 0.85], 6: [0.92, 0.86, 0.78] };
 
 function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
 function rgb(GAME, name) {
@@ -77,20 +84,30 @@ function makeCache(GAME, P, cs) {
   };
 }
 
-// InstancedMesh de cajas identicas (solo traslacion) a partir de una lista [mx, mz]
-function instBoxes(geo, mat, list, y) {
+// InstancedMesh de cajas identicas (solo traslacion) a partir de una lista [mx, mz].
+// colors (opcional): tinte por instancia (array [r,g,b] 0..1 o null) para variar salas.
+function instBoxes(geo, mat, list, y, colors) {
   if (!list.length) return null;
   const mesh = new THREE.InstancedMesh(geo, mat, list.length);
   const m = new THREE.Matrix4();
   for (let i = 0; i < list.length; i++) { m.makeTranslation(list[i][0], y, list[i][1]); mesh.setMatrixAt(i, m); }
   mesh.instanceMatrix.needsUpdate = true;
+  if (colors) {
+    const col = new THREE.Color();
+    for (let i = 0; i < colors.length; i++) {
+      const c = colors[i] || [1, 1, 1];
+      col.setRGB(c[0], c[1], c[2]);
+      mesh.setColorAt(i, col);
+    }
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }
   return mesh;
 }
 
 // paredes / piso / techo / agua de un chunk (cada categoria = 1 InstancedMesh)
 function buildCells(GAME, chunk, cs, cache, P) {
   const size = chunk.size;
-  const wall = [], floor = [], ceil = [], water = [];
+  const wall = [], floor = [], floorCol = [], ceil = [], water = [];
   for (let dz = 0; dz < size; dz++) {
     for (let dx = 0; dx < size; dx++) {
       const v = chunk.cells[dz * size + dx];
@@ -98,12 +115,13 @@ function buildCells(GAME, chunk, cs, cache, P) {
       const mz = (chunk.cz * size + dz + 0.5) * cs;
       if (v === 0) { wall.push([mx, mz]); continue; }
       floor.push([mx, mz]); ceil.push([mx, mz]);
-      if (v === 4) water.push([mx, mz]);
+      floorCol.push(FLOOR_TINT[v] || null); // tinte sutil en salas de duchas (5)/limpieza (6)
+      if (v === 4 || v === 5) water.push([mx, mz]); // tipo 5: piso mojado reflectivo extra
     }
   }
   return [
     instBoxes(cache.geo.wall, cache.mat.wall, wall, P.wallHeight / 2),
-    instBoxes(cache.geo.floor, cache.mat.floor, floor, -0.05),
+    instBoxes(cache.geo.floor, cache.mat.floor, floor, -0.05, floorCol),
     instBoxes(cache.geo.ceil, cache.mat.ceil, ceil, P.wallHeight + 0.05),
     instBoxes(cache.geo.water, cache.mat.water, water, 0.05),
   ];
