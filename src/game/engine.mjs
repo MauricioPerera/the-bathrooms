@@ -13,11 +13,16 @@ import { createAudio } from './audio.mjs';
 const SEED = 0x0BA7;
 const VOX = 0.25; // 1 voxel = 0.25m (celda = 2m)
 
+// Zumbido (hum) local a la luz viva mas cercana: pleno bajo la luz, apagado a HUM_MAX.
+const HUM_REF = 1.0; // m: dentro de este radio el hum toma toda la intensidad de la luz
+const HUM_MAX = 6.0; // m: a esta distancia la contribucion de esa luz al hum se anula
+
 // tipo de prop de maze-core -> estructura de GAME.VOXELS (null = sin malla)
 const PROP_STRUCT = {
   stall: 'stall_unit', sink: 'sink_unit', mirror: 'sink_unit',
   urinal: 'urinal_unit', dispenser: 'dispenser_empty', bin: 'bin_full', pipes: null,
 };
+const TOILET = 'toilet_unit'; // estructura v2 (si el artefacto aun no la trae, degrada a stall_unit)
 
 function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
 function rgb(GAME, name) {
@@ -111,14 +116,16 @@ function buildStruct(GAME, name, places, cs, baseY, geoVox, mat) {
   if (!st || !places.length) return null;
   const vox = st.voxels, half = cs / 2;
   const mesh = new THREE.InstancedMesh(geoVox, mat, places.length * vox.length);
-  const m = new THREE.Matrix4(), col = new THREE.Color();
+  const m = new THREE.Matrix4(), rotM = new THREE.Matrix4(), off = new THREE.Vector3(), col = new THREE.Color();
   let i = 0;
   for (const pl of places) {
-    const ang = (pl.rot || 0) * Math.PI / 2, s = Math.sin(ang), c = Math.cos(ang);
-    const ox = pl.wx * cs, oz = pl.wz * cs;
+    // ROTACION REAL: makeRotationY(90*rot) sobre el offset centrado, luego traslacion al
+    // centro de la celda. rot 0..3 => frente hacia +z,+x,-z,-x (estructuras disenadas a +z).
+    rotM.makeRotationY((pl.rot || 0) * Math.PI / 2);
+    const cxm = pl.wx * cs + half, czm = pl.wz * cs + half;
     for (const v of vox) {
-      const lx = v.x * VOX + VOX / 2 - half, lz = v.z * VOX + VOX / 2 - half;
-      m.makeTranslation(ox + half + lx * c - lz * s, baseY + v.y * VOX + VOX / 2, oz + half + lx * s + lz * c);
+      off.set(v.x * VOX + VOX / 2 - half, 0, v.z * VOX + VOX / 2 - half).applyMatrix4(rotM);
+      m.makeTranslation(cxm + off.x, baseY + v.y * VOX + VOX / 2, czm + off.z);
       mesh.setMatrixAt(i, m);
       const rc = (GAME.MATERIALS[v.m] || { color: [255, 0, 255] }).color;
       col.setRGB(rc[0] / 255, rc[1] / 255, rc[2] / 255);
@@ -131,13 +138,23 @@ function buildStruct(GAME, name, places, cs, baseY, geoVox, mat) {
   return mesh;
 }
 
+// ~25% de los 'stall' pasan a toilet_unit (cubiculo roto con retrete expuesto),
+// deterministicamente por celda mundial mezclada con la seed. Degrada a stall_unit si el
+// artefacto todavia no define toilet_unit.
+function stallStruct(GAME, wx, wz) {
+  if (GAME.VOXELS[TOILET] && (Math.imul(stableId(wx, wz) ^ SEED, 2654435761) >>> 30) === 0) return TOILET;
+  return 'stall_unit';
+}
+
 // mobiliario del chunk: agrupar props por estructura y una InstancedMesh por grupo
 function buildProps(GAME, chunk, cs, cache) {
   const size = chunk.size, groups = {};
   for (const p of chunk.props) {
-    const name = PROP_STRUCT[p.type];
+    const wx = chunk.cx * size + p.x, wz = chunk.cz * size + p.z;
+    let name = PROP_STRUCT[p.type];
+    if (name === 'stall_unit') name = stallStruct(GAME, wx, wz);
     if (!name) continue;
-    (groups[name] || (groups[name] = [])).push({ wx: chunk.cx * size + p.x, wz: chunk.cz * size + p.z, rot: p.rot });
+    (groups[name] || (groups[name] = [])).push({ wx, wz, rot: p.rot });
   }
   const out = [];
   for (const name in groups) {
@@ -223,9 +240,11 @@ export function startGame(opts) {
   const audio = createAudio(GAME);
 
   // pool de PointLights dinamicas asignadas a las luces mas cercanas
+  // Alcance/decay algo mayores para reconocer siluetas a 4-6 m de un fixture VIVO; las
+  // luces muertas siguen en 0 => las zonas muertas conservan su oscuridad opresiva.
   const pool = [];
   for (let i = 0; i < 8; i++) {
-    const L = new THREE.PointLight(rgb(GAME, 'LIGHT_ON').getHex(), 0, cs * 5, 2);
+    const L = new THREE.PointLight(rgb(GAME, 'LIGHT_ON').getHex(), 0, cs * 6, 1.7);
     scene.add(L); pool.push(L);
   }
 
@@ -288,20 +307,24 @@ export function startGame(opts) {
       const e = gLights[i];
       if (!e) { pool[i].intensity = 0; continue; }
       pool[i].position.set(e.mx, P.wallHeight - 0.4, e.mz);
-      pool[i].intensity = lightState(SEED, e.id, tMs).intensity * 3.2;
+      pool[i].intensity = lightState(SEED, e.id, tMs).intensity * 4.5;
     }
   }
 
+  // Nivel 0..1 del zumbido: intensidad (flicker-aware) de la luz VIVA mas cercana atenuada
+  // por su distancia. Casi 0 lejos de toda luz; sigue el parpadeo de una luz flicker.
   function humLevel(tMs) {
     const px = state.px * cs, pz = state.pz * cs;
-    let best = 0;
+    let bestD = Infinity, level = 0;
     for (const e of gLights) {
-      const a = attenuation(Math.hypot(e.mx - px, e.mz - pz), P.audio.refDist, P.audio.maxDist);
-      if (a <= 0) continue;
-      const v = lightState(SEED, e.id, tMs).intensity * a;
-      if (v > best) best = v;
+      const st = lightState(SEED, e.id, tMs);
+      if (st.mode === 'dead') continue; // las luces muertas no zumban
+      const d = Math.hypot(e.mx - px, e.mz - pz);
+      if (d >= bestD) continue;
+      bestD = d;
+      level = st.intensity * attenuation(d, HUM_REF, HUM_MAX);
     }
-    return best;
+    return level;
   }
 
   function nearPuddle() {

@@ -36,20 +36,28 @@ function spatial(A, gain, pan) {
 
 // --- capas continuas --------------------------------------------------------
 
+// hum electrico grave: base casi inaudible; el motor lo crece por cercania a la luz viva.
+// Lowpass suave para quitar el filo aspero del sawtooth (menos fatiga).
 function startHum(A) {
   const g = A.ctx.createGain();
-  g.gain.value = 0.03;
+  g.gain.value = 0.006; // base casi inaudible lejos de toda luz
+  const lp = A.ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 520;
+  lp.Q.value = 0.6;
+  const gains = [0.7, 0.28, 0.12]; // fundamental dominante, armonicos apenas
   [60, 120, 180].forEach((f, i) => {
     const o = A.ctx.createOscillator();
     o.type = 'sawtooth';
     o.frequency.value = f;
     const og = A.ctx.createGain();
-    og.gain.value = 0.5 / (i + 1);
+    og.gain.value = gains[i];
     o.connect(og);
     og.connect(g);
     o.start();
   });
-  g.connect(A.master);
+  g.connect(lp);
+  lp.connect(A.master);
   A.humGain = g; // el motor modula por cercania de luces (hum)
 }
 
@@ -60,7 +68,7 @@ function startPipe(A) {
   lp.type = 'lowpass';
   lp.frequency.value = 90;
   const g = A.ctx.createGain();
-  g.gain.value = 0.12;
+  g.gain.value = 0.08; // tuberia grave sutil, no debe fatigar
   src.connect(lp);
   lp.connect(g);
   g.connect(A.master);
@@ -86,9 +94,9 @@ function drip(A, when, gain, pan) {
 
 function maybeDrip(A, tMs) {
   if (tMs < A.nextDrip) return;
-  A.nextDrip = tMs + 450 + Math.random() * 2400;
+  A.nextDrip = tMs + 800 + Math.random() * 2600; // goteo moderado, sin saturar
   const pan = Math.random() * 2 - 1;
-  drip(A, A.ctx.currentTime + 0.02, 0.5, pan);
+  drip(A, A.ctx.currentTime + 0.02, 0.34, pan);
 }
 
 // --- eventos puntuales ------------------------------------------------------
@@ -235,10 +243,11 @@ export function createAudio(GAME) {
     A.nextDrip = A.cursor;
   }
 
-  // humLevel 0..1 = intensidad de la luz mas cercana (el zumbido sigue a las luces)
+  // humLevel 0..1 = intensidad de la luz viva mas cercana (el zumbido sigue a las luces).
+  // Base minima + crecimiento sutil; tau corto para que la amplitud acompane el flicker.
   function update(tMs, humLevel) {
     if (!A.started) return;
-    if (A.humGain) A.humGain.gain.setTargetAtTime(0.015 + 0.06 * (humLevel || 0), A.ctx.currentTime, 0.25);
+    if (A.humGain) A.humGain.gain.setTargetAtTime(0.006 + 0.05 * (humLevel || 0), A.ctx.currentTime, 0.06);
     pump(A, tMs);
     maybeDrip(A, tMs);
   }
