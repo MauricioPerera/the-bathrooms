@@ -23,18 +23,36 @@ function hash3(seed, a, b) {
 }
 
 // clasifica el bloque 5x5 (bx,bz) de forma determinista.
-// cellType: 0=macizo/pared, 1=abierto, 2=cubiculos, 3=lavabos, 4=inundado.
+// kind -> layout de celdas (ver cellTypeAt):
+//   solid=macizo/pared, open=pasillo, cubicle=cubiculos, sinkroom=lavabos,
+//   flooded=inundado, shower=sala de duchas (tipo 5), locker=cuarto limpieza/vestuario (tipo 6).
 function classifyBlock(seed, bx, bz) {
   const h = hash3(seed, bx, bz);
-  const sel = h % 20;
-  let cellType, kind;
-  if (sel <= 8) { cellType = 0; kind = 'solid'; }        // 45% macizo (paredes con props)
-  else if (sel <= 12) { cellType = 2; kind = 'cubicle'; } // 20% sala de cubiculos
-  else if (sel <= 15) { cellType = 3; kind = 'sink'; }    // 15% sala de lavabos
-  else if (sel <= 17) { cellType = 4; kind = 'flooded'; } // 10% inundada
-  else { cellType = 1; kind = 'open'; }                   // 10% pasillo abierto
-  const style = ((h / 20) | 0) % 4;
-  return { h, cellType, kind, style };
+  const sel = h % 24;
+  let kind;
+  if (sel <= 7) kind = 'solid';          // 33% macizo (paredes con props)
+  else if (sel <= 10) kind = 'cubicle';  // sala de cubiculos (tipo 2)
+  else if (sel <= 13) kind = 'sinkroom'; // sala de lavabos (tipo 3)
+  else if (sel <= 15) kind = 'flooded';  // inundada (tipo 4)
+  else if (sel <= 17) kind = 'open';     // pasillo abierto (tipo 1)
+  else if (sel <= 20) kind = 'shower';   // sala de duchas (tipo 5)
+  else kind = 'locker';                  // cuarto limpieza/vestuario (tipo 6)
+  const style = ((h / 24) | 0) % 4;
+  return { h, kind, style };
+}
+
+// tipo de la celda interior (ox,oz en 1..5, = mod(w,PERIOD)) segun el kind del bloque.
+// Las salas de duchas dejan el muro -z (oz===1) macizo para colgar las duchas.
+function cellTypeAt(kind, ox, oz) {
+  switch (kind) {
+    case 'solid': return 0;
+    case 'cubicle': return 2;
+    case 'sinkroom': return 3;
+    case 'flooded': return 4;
+    case 'shower': return oz === 1 ? 0 : 5;
+    case 'locker': return 6;
+    default: return 1; // open
+  }
 }
 
 // tipo de celda mundial (entero). Fuente de verdad de caminabilidad.
@@ -42,7 +60,7 @@ function worldCell(seed, wx, wz) {
   if (mod(wx, PERIOD) === 0 || mod(wz, PERIOD) === 0) return 1; // reticula de corredores
   const bx = Math.floor(wx / PERIOD);
   const bz = Math.floor(wz / PERIOD);
-  return classifyBlock(seed, bx, bz).cellType;
+  return cellTypeAt(classifyBlock(seed, bx, bz).kind, mod(wx, PERIOD), mod(wz, PERIOD));
 }
 
 // --- API --------------------------------------------------------------------
@@ -91,21 +109,38 @@ function fillBlock(seed, bx, bz, baseX, baseZ, props, lights, puddles) {
     }
     return;
   }
+  if (info.kind === 'shower') {
+    // duchas en fila sobre el muro -z (oz===1, NO caminable), frente +z (rot 0)
+    // hacia la sala tipo 5 caminable. Un banco de vestuario suelto en la sala.
+    for (let lx = 1; lx <= 5; lx++) {
+      props.push({ x: baseX + lx, z: baseZ + 1, type: 'shower', rot: 0 });
+    }
+    lights.push({ x: cx, z: cz });
+    props.push({ x: baseX + 2, z: baseZ + 3, type: 'bench', rot: 0 });
+    return;
+  }
   // salas caminables: luz al centro, y props sueltos sobre celdas caminables.
   lights.push({ x: cx, z: cz });
   if (info.kind === 'flooded') {
     const r = 0.2 + (info.h % 40) / 100; // (0.15, 0.6]
     puddles.push({ x: cx, z: cz, r });
     puddles.push({ x: baseX + 2, z: baseZ + 2, r: 0.25 });
-  } else {
-    props.push({ x: cx, z: cz, type: 'bin', rot: 0 });
-    if (info.kind === 'open') props.push({ x: baseX + 2, z: baseZ + 2, type: 'pipes', rot: 0 });
+    return;
   }
+  if (info.kind === 'locker') {
+    // cuarto de limpieza/vestuario: cubo de fregona y banco (sueltos, sobre tipo 6).
+    props.push({ x: baseX + 2, z: baseZ + 2, type: 'mop_bucket', rot: 0 });
+    props.push({ x: cx, z: cz, type: 'bench', rot: 0 });
+    return;
+  }
+  props.push({ x: cx, z: cz, type: 'bin', rot: 0 });
+  if (info.kind === 'open') props.push({ x: baseX + 2, z: baseZ + 2, type: 'pipes', rot: 0 });
 }
 
 function wallPropType(style, lx) {
   if (style === 0) return 'stall';
-  if (style === 1) return (lx % 2 === 0) ? 'sink' : 'mirror'; // apareados
+  // muro de lavabos: espejos y lavabos apareados, con un secador mural (dryer) al centro.
+  if (style === 1) return lx === 3 ? 'dryer' : (lx % 2 === 0 ? 'sink' : 'mirror');
   if (style === 2) return 'urinal';
   return 'dispenser';
 }
