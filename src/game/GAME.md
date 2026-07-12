@@ -30,6 +30,8 @@ materials:
   PIPE: { color: [104, 106, 102] }
   METAL: { color: [126, 128, 124] }
   TRASH: { color: [72, 68, 56] }
+  CURTAIN: { color: [178, 176, 158] }
+  RUST: { color: [120, 78, 54] }
 prefabs:
   wall_slab: { size: [8, 9, 1], fill: TILE_WALL }
   floor_slab: { size: [8, 1, 8], fill: TILE_FLOOR }
@@ -60,6 +62,20 @@ prefabs:
   dispenser_box: { size: [3, 4, 1], fill: METAL }
   light_tube: { size: [6, 1, 1], fill: LIGHT_ON }
   light_tube_dead: { size: [6, 1, 1], fill: LIGHT_DEAD }
+  shower_tray: { size: [6, 1, 6], fill: PORCELAIN }
+  shower_riser: { size: [1, 8, 1], fill: METAL }
+  shower_head: { size: [2, 1, 2], fill: METAL }
+  shower_rail: { size: [6, 1, 1], fill: METAL }
+  shower_curtain: { size: [6, 5, 1], fill: CURTAIN, cells: [{ x: 0, y: 0, z: 0, m: MOLD }, { x: 5, y: 1, z: 0, m: GRIME }, { x: 2, y: 0, z: 0, m: GRIME }] }
+  dryer_body: { size: [4, 3, 2], fill: METAL }
+  dryer_hood: { size: [2, 1, 2], fill: METAL }
+  dryer_nozzle: { size: [2, 1, 1], fill: METAL }
+  bucket_body: { size: [4, 4, 3], fill: METAL, cells: [{ x: 0, y: 1, z: 1, m: RUST }, { x: 3, y: 2, z: 1, m: RUST }, { x: 1, y: 0, z: 0, m: RUST }] }
+  bucket_water: { size: [3, 1, 2], fill: WATER }
+  mop_seg: { size: [1, 1, 1], fill: PIPE }
+  mop_head: { size: [2, 2, 1], fill: GRIME }
+  bench_board: { size: [12, 1, 3], fill: STALL }
+  bench_leg: { size: [2, 2, 3], fill: METAL }
 structures:
   toilet_unit:
     place: [{ prefab: toilet_foot, at: [1, 0, 3] }, { prefab: toilet_tank, at: [0, 3, 0] }, { prefab: toilet_bowl, at: [0, 1, 2] }, { prefab: toilet_seat, at: [0, 4, 2] }, { prefab: water_pool, at: [0, 0, 2] }, { prefab: grime_patch, at: [1, 2, 4] }, { prefab: grime_streak, at: [3, 3, 1] }]
@@ -75,6 +91,14 @@ structures:
     place: [{ prefab: dispenser_box, at: [2, 5, 0] }, { prefab: paper_wad, at: [3, 4, 0] }, { prefab: grime_streak, at: [3, 2, 0] }]
   light_fixture:
     place: [{ prefab: ceiling_slab, at: [0, 1, 0] }, { prefab: light_tube, at: [1, 0, 2] }, { prefab: light_tube_dead, at: [1, 0, 4] }]
+  shower_unit:
+    place: [{ prefab: wall_slab, at: [0, 0, 0] }, { prefab: shower_tray, at: [1, 0, 1] }, { prefab: shower_riser, at: [1, 1, 0] }, { prefab: shower_head, at: [1, 7, 1] }, { prefab: shower_rail, at: [1, 7, 5] }, { prefab: shower_curtain, at: [1, 2, 5] }, { prefab: water_pool, at: [2, 0, 2] }, { prefab: grime_streak, at: [1, 3, 1] }]
+  dryer_unit:
+    place: [{ prefab: wall_slab, at: [0, 0, 0] }, { prefab: dryer_body, at: [2, 3, 1] }, { prefab: dryer_hood, at: [3, 6, 1] }, { prefab: dryer_nozzle, at: [3, 2, 1] }, { prefab: grime_streak, at: [3, 0, 1] }]
+  mop_bucket:
+    place: [{ prefab: bucket_body, at: [1, 0, 1] }, { prefab: bucket_water, at: [1, 3, 1] }, { prefab: mop_seg, at: [4, 3, 2] }, { prefab: mop_seg, at: [4, 4, 2] }, { prefab: mop_seg, at: [5, 5, 2] }, { prefab: mop_seg, at: [5, 6, 2] }, { prefab: mop_seg, at: [6, 7, 2] }, { prefab: mop_head, at: [5, 7, 2] }, { prefab: water_puddle, at: [0, 0, 4] }]
+  bench_unit:
+    place: [{ prefab: bench_board, at: [0, 2, 0] }, { prefab: bench_leg, at: [1, 0, 0] }, { prefab: bench_leg, at: [8, 0, 0] }, { prefab: grime_patch, at: [4, 2, 0] }]
 ---
 
 ## Overview
@@ -128,6 +152,10 @@ contra paredes oscuras y se **reconoce a 4-6 m** bajo la luz muerta.
 - `LIGHT_ON` / `LIGHT_DEAD`: tubo encendido (amarillo enfermo) y tubo muerto (gris).
 - `PAPER`: papel higiénico/toallas apelmazadas, blanco sucio.
 - `PIPE` / `METAL` / `TRASH`: cañerías corroídas, chapa mate y desperdicio oscuro.
+- `CURTAIN` (v3): la cortina de ducha, plástico pálido sucio a medio caer; más claro
+  que la pared pero manchado (esquinas de `MOLD`/`GRIME`), nunca blanco limpio.
+- `RUST` (v3): óxido marrón-naranja apagado que corroe el cubo de fregona y los metales;
+  desaturado, enfermo, jamás vivo.
 
 ## Prefabs
 
@@ -148,6 +176,15 @@ redibujar geometría:
   `water_pool`.
 - Cesto y dispensador: `bin_body`, `paper_heap`, `paper_wad`, `dispenser_box`.
 - Luz: `light_tube`, `light_tube_dead`.
+- Ducha (v3): `shower_tray` (plato bajo `PORCELAIN` en el piso), `shower_riser` (columna
+  mural), `shower_head` (regadera que asoma), `shower_rail` (barra superior) y
+  `shower_curtain` (cortina `CURTAIN` a medio caer con esquinas de `MOLD`/`GRIME`).
+- Secador de manos (v3): `dryer_body` (caja `METAL` mural), `dryer_hood` (remate más
+  angosto que redondea la silueta) y `dryer_nozzle` (boca inferior que asoma abajo).
+- Fregona (v3): `bucket_body` (cubo `METAL` con óxido `RUST` vía `cells`), `bucket_water`
+  (agua turbia `WATER` al ras), `mop_seg` (segmento de palo `PIPE`, se escalona en
+  diagonal para el palo inclinado) y `mop_head` (cabeza `GRIME` sucia).
+- Banco de vestuario (v3): `bench_board` (tabla larga `STALL`) y `bench_leg` (pata `METAL`).
 
 ## Structures
 
@@ -177,6 +214,18 @@ cada una por su nombre exacto. Todas miran a **+z** (pared en `z = 0`):
   `paper_wad` colgando y un churrete `grime_streak` seco debajo.
 - `light_fixture`: plafón `ceiling_slab` con un `light_tube` encendido y otro
   `light_tube_dead` al lado — la mitad de la luz siempre está muerta.
+- `shower_unit` (**v3**): plato de ducha `shower_tray` bajo en el piso, `shower_riser`
+  mural con `shower_head` arriba, `shower_rail` cruzando el frente y una `shower_curtain`
+  `CURTAIN` **a medio caer** colgando de la barra; agua turbia y churrete `grime_streak`.
+  La cortina pálida y sucia recorta la silueta de ducha contra la pared oscura.
+- `dryer_unit` (**v3**): secador de manos mural — `dryer_body` `METAL` compacto a media
+  altura, `dryer_hood` más angosto que **redondea** la caja y `dryer_nozzle` como **boca
+  inferior visible** debajo; churrete seco bajo la boca. Silueta de caja redondeada.
+- `mop_bucket` (**v3**): `bucket_body` `METAL` oxidado (`RUST`) con `bucket_water` turbia
+  al ras, el palo de fregona (`mop_seg` escalonados en diagonal) **inclinado y apoyado**
+  saliendo del cubo hasta la `mop_head` sucia; charco `water_puddle` derramado al lado.
+- `bench_unit` (**v3**): banco bajo de vestuario — `bench_board` `STALL` larga apoyada
+  sobre dos `bench_leg` `METAL`, con una mancha `GRIME` encima. Contrasta contra el piso.
 
 ## Do's and Don'ts
 
